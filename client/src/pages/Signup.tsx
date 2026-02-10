@@ -6,6 +6,7 @@ import { authAPI } from '../features/auth/authAPI';
 import type { UserRole } from '../features/auth/authTypes';
 import type { AppDispatch, RootState } from '../app/store';
 
+
 const Signup = () => {
     const [formData, setFormData] = useState({
         name: '',
@@ -23,48 +24,44 @@ const Signup = () => {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        dispatch({ type: 'auth/setLoading', payload: true } as any);
-        dispatch(setError(''));
+   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    dispatch({ type: 'auth/setLoading', payload: true } as any);
+    dispatch(setError(''));
 
-        try {
-            const response = await authAPI.signup(formData);
+    try {
+        const response = await authAPI.signup(formData);
 
-            // Extract user and token from response
-            const userData = response.data?.user || response.user;
-            const token = response.data?.token || response.token;
+        const userData = response.user;
+        const token = response.token;
 
-            if (!userData || !token) {
-                throw new Error('Invalid response from server');
-            }
-
-            // Convert user to proper format
-            const user = {
-                id: userData.id || userData._id || '',
-                email: userData.email,
-                name: userData.name,
-                role: userData.role,
-            };
-
-            // Store user and token in Redux
-            dispatch(setUser(user));
-            dispatch(setToken(token));
-
-            // Show success message
-            setSuccessMessage('Successfully signed up! Redirecting...');
-
-            // Redirect to home after 2 seconds
-            setTimeout(() => {
-                navigate('/');
-            }, 2000);
-        } catch (error: any) {
-            const errorMessage = error.response?.data?.message || error.message || 'Signup failed';
-            dispatch(setError(errorMessage));
-        } finally {
-            dispatch({ type: 'auth/setLoading', payload: false } as any);
+        if (!userData || !token) {
+            throw new Error('Invalid response from server');
         }
-    };
+
+        const user = {
+            id: userData.id,
+            email: userData.email,
+            name: userData.name,
+            role: userData.role,
+        };
+
+        dispatch(setUser(user));
+        dispatch(setToken(token));
+
+        setSuccessMessage('Successfully signed up! Redirecting...');
+
+        setTimeout(() => {
+            navigate('/');
+        }, 2000);
+    } catch (error: any) {
+        const errorMessage =
+            error.response?.data?.message || error.message || 'Signup failed';
+        dispatch(setError(errorMessage));
+    } finally {
+        dispatch({ type: 'auth/setLoading', payload: false } as any);
+    }
+};
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
